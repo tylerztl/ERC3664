@@ -23,7 +23,7 @@ contract ERC3664Generic is Context, AccessControlEnumerable, ERC3664 {
      * See {ERC3664-_mint}.
      */
     function mint(
-        uint256 attrId,
+        uint256 _attrId,
         string memory _name,
         string memory _symbol,
         string memory _uri
@@ -33,7 +33,7 @@ contract ERC3664Generic is Context, AccessControlEnumerable, ERC3664 {
             "ERC3664Generic: must have minter role to mint"
         );
 
-        _mint(attrId, _name, _symbol, _uri);
+        _mint(_attrId, _name, _symbol, _uri);
     }
 
     /**

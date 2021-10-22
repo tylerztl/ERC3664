@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 
 import "openzeppelin-solidity/contracts/utils/introspection/IERC165.sol";
 
+/**
+ * @dev Required interface of an ERC3664 compliant contract.
+ */
 interface IERC3664 is IERC165 {
     /**
      * @dev Emitted when new attribute type `attrId` are minted.
