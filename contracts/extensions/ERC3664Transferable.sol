@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "./IERC3664Transferable.sol";
 import "./ERC3664Generic.sol";
-import "../../utils/ITokenHolder.sol";
+import "../utils/ITokenHolder.sol";
 
 /**
  * @dev Implementation of the {ERC3664Transferable} interface.

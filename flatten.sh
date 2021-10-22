@@ -1,1 +1,1 @@
-truffle-flattener contracts/Legoot.sol > flattened/Legoot.sol
+truffle-flattener contracts/ERC3664.sol > flattened/ERC3664.sol
