@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import "../ERC3664.sol";
+import "../extensions/ERC3664TextBased.sol";
 
 /**
  * @dev Implementation of the {ERC3664CrossSynthetic} interface.
  */
-abstract contract ERC3664CrossSynthetic is ERC3664 {
+abstract contract ERC3664CrossSynthetic is ERC3664TextBased {
     struct SynthesizedToken {
         address token;
         address owner;

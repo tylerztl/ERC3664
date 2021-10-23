@@ -24,12 +24,10 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
     mapping(uint256 => AttrMetadata) private _attrMetadatas;
     // attrId => tokenId => amount
     mapping(uint256 => mapping(uint256 => uint256)) public attrBalances;
-    // attrId => tokenId => text
-    mapping(uint256 => mapping(uint256 => bytes)) public attrTexts;
-    // tokenId => primaryId
-    mapping(uint256 => uint256) public primaryAttrs;
-    // tokenId => secondaryIds
-    mapping(uint256 => uint256[]) public secondaryAttrs;
+    // tokenId => primary attribute Id
+    mapping(uint256 => uint256) private _primaryAttrs;
+    // tokenId => all attached attributes
+    mapping(uint256 => uint256[]) public attrs;
 
     constructor(string memory uri_) {
         _setURI(uri_);
@@ -120,7 +118,20 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         override
         returns (uint256)
     {
-        return primaryAttrs[tokenId];
+        return _primaryAttrs[tokenId];
+    }
+
+    function setPrimaryAttribute(uint256 tokenId, uint256 attrId)
+        public
+        virtual
+        override
+    {
+        require(
+            _hasAttr(tokenId, attrId),
+            "ERC3664: token has not attached the attribute"
+        );
+
+        _primaryAttrs[tokenId] = attrId;
     }
 
     /**
@@ -133,7 +144,7 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         override
         returns (uint256[] memory)
     {
-        return secondaryAttrs[tokenId];
+        return attrs[tokenId];
     }
 
     /**
@@ -169,27 +180,12 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
     }
 
     /**
-     * @dev See {IERC3664-textOf}.
-     */
-    function textOf(uint256 tokenId, uint256 attrId)
-        public
-        view
-        virtual
-        override
-        returns (bytes memory)
-    {
-        return attrTexts[attrId][tokenId];
-    }
-
-    /**
      * @dev See {IERC3664-attach}.
      */
     function attach(
         uint256 tokenId,
         uint256 attrId,
-        uint256 amount,
-        bytes memory text,
-        bool isPrimary
+        uint256 amount
     ) public virtual override {
         require(
             _attrExists(attrId),
@@ -208,15 +204,7 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         );
 
         if (attrBalances[attrId][tokenId] == 0) {
-            if (isPrimary) {
-                primaryAttrs[tokenId] = attrId;
-            } else {
-                secondaryAttrs[tokenId].push(attrId);
-            }
-        }
-
-        if (text.length > 0) {
-            attrTexts[attrId][tokenId] = text;
+            attrs[tokenId].push(attrId);
         }
 
         attrBalances[attrId][tokenId] += amount;
@@ -230,8 +218,7 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
     function batchAttach(
         uint256 tokenId,
         uint256[] calldata attrIds,
-        uint256[] calldata amounts,
-        bytes[] calldata texts
+        uint256[] calldata amounts
     ) public virtual override {
         address operator = _msgSender();
 
@@ -244,11 +231,7 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
             );
 
             if (attrBalances[attrIds[i]][tokenId] == 0) {
-                secondaryAttrs[tokenId].push(attrIds[i]);
-            }
-
-            if (texts[i].length > 0) {
-                attrTexts[attrIds[i]][tokenId] = texts[i];
+                attrs[tokenId].push(attrIds[i]);
             }
 
             attrBalances[attrIds[i]][tokenId] += amounts[i];

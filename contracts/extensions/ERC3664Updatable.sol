@@ -31,7 +31,7 @@ abstract contract ERC3664Updatable is ERC3664, IERC3664Updatable {
         );
 
         delete attrBalances[attrId][tokenId];
-        _removeByValue(secondaryAttrs[tokenId], attrId);
+        _removeByValue(attrs[tokenId], attrId);
 
         emit TransferSingle(operator, tokenId, 0, attrId, amount);
     }

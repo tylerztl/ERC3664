@@ -58,16 +58,14 @@ contract ERC3664Generic is ERC3664, AccessControlEnumerable {
     function attach(
         uint256 tokenId,
         uint256 attrId,
-        uint256 amount,
-        bytes memory text,
-        bool isPrimary
+        uint256 amount
     ) public virtual override {
         require(
             hasRole(ATTACH_ROLE, _msgSender()),
             "ERC3664Generic: must have attach role to attach"
         );
 
-        super.attach(tokenId, attrId, amount, text, isPrimary);
+        super.attach(tokenId, attrId, amount);
     }
 
     /**
@@ -76,15 +74,14 @@ contract ERC3664Generic is ERC3664, AccessControlEnumerable {
     function batchAttach(
         uint256 tokenId,
         uint256[] calldata attrIds,
-        uint256[] calldata amounts,
-        bytes[] calldata texts
+        uint256[] calldata amounts
     ) public virtual override {
         require(
             hasRole(ATTACH_ROLE, _msgSender()),
             "ERC3664Generic: must have attach role to attach"
         );
 
-        super.batchAttach(tokenId, attrIds, amounts, texts);
+        super.batchAttach(tokenId, attrIds, amounts);
     }
 
     /**

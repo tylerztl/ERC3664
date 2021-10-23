@@ -49,6 +49,8 @@ interface IERC3664 is IERC165 {
         view
         returns (uint256);
 
+    function setPrimaryAttribute(uint256 tokenId, uint256 attrId) external;
+
     /**
      * @dev Returns all attribute types of owned by `tokenId`.
      */
@@ -73,20 +75,13 @@ interface IERC3664 is IERC165 {
         view
         returns (uint256[] memory);
 
-    function textOf(uint256 tokenId, uint256 attrId)
-        external
-        view
-        returns (bytes memory);
-
     /**
      * @dev Attaches `amount` value of attribute type `attrId` to `tokenId`.
      */
     function attach(
         uint256 tokenId,
         uint256 attrId,
-        uint256 amount,
-        bytes memory text,
-        bool isPrimary
+        uint256 amount
     ) external;
 
     /**
@@ -95,7 +90,6 @@ interface IERC3664 is IERC165 {
     function batchAttach(
         uint256 tokenId,
         uint256[] calldata attrIds,
-        uint256[] calldata amounts,
-        bytes[] calldata texts
+        uint256[] calldata amounts
     ) external;
 }
