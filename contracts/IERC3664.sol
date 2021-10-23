@@ -11,23 +11,11 @@ interface IERC3664 is IERC165 {
     /**
      * @dev Emitted when new attribute type `attrId` are minted.
      */
-    event NewAttribute(
-        address indexed operator,
+    event AttributeCreated(
         uint256 indexed attrId,
         string name,
         string symbol,
         string uri
-    );
-
-    /**
-     * @dev Equivalent to multiple {NewAttribute} events.
-     */
-    event NewAttributeBatch(
-        address indexed operator,
-        uint256[] indexed attrIds,
-        string[] names,
-        string[] symbols,
-        string[] uris
     );
 
     /**

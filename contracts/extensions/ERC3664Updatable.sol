@@ -8,7 +8,7 @@ import "./ERC3664Generic.sol";
 contract ERC3664Updatable is IERC3664Updatable, ERC3664Generic {
     bytes32 public constant UPDATER_ROLE = keccak256("UPDATER_ROLE");
 
-    constructor() ERC3664Generic() {
+    constructor(string memory uri_) ERC3664Generic(uri_) {
         _setupRole(UPDATER_ROLE, _msgSender());
     }
 
@@ -24,7 +24,7 @@ contract ERC3664Updatable is IERC3664Updatable, ERC3664Generic {
             _attrExists(attrId),
             "ERC3664Updatable: remove for nonexistent attribute"
         );
-        uint256 amount = _balances[attrId][tokenId];
+        uint256 amount = attrBalances[attrId][tokenId];
         require(
             amount > 0,
             "ERC3664Updatable: token has not attached the attribute"
@@ -40,7 +40,7 @@ contract ERC3664Updatable is IERC3664Updatable, ERC3664Generic {
             ""
         );
 
-        delete _balances[attrId][tokenId];
+        delete attrBalances[attrId][tokenId];
         _removeByValue(secondaryAttrs[tokenId], attrId);
 
         emit TransferSingle(operator, tokenId, 0, attrId, amount);
@@ -77,7 +77,7 @@ contract ERC3664Updatable is IERC3664Updatable, ERC3664Generic {
             ""
         );
 
-        _balances[attrId][tokenId] += amount;
+        attrBalances[attrId][tokenId] += amount;
 
         emit TransferSingle(operator, 0, tokenId, attrId, amount);
     }
@@ -113,9 +113,9 @@ contract ERC3664Updatable is IERC3664Updatable, ERC3664Generic {
             ""
         );
 
-        uint256 tb = _balances[attrId][tokenId];
+        uint256 tb = attrBalances[attrId][tokenId];
         require(tb >= amount);
-        _balances[attrId][tokenId] = tb - amount;
+        attrBalances[attrId][tokenId] = tb - amount;
 
         emit TransferSingle(operator, tokenId, 0, attrId, amount);
     }

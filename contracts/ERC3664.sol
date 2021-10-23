@@ -18,18 +18,22 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         bool exist;
     }
 
+    // Used as the URI for all attribute types by relying on ID substitution, e.g. https://attr-cdn-domain/{id}.json
+    string private _baseUri;
     // attrId => metadata
-    mapping(uint256 => AttrMetadata) public _attrMetadatas;
+    mapping(uint256 => AttrMetadata) private _attrMetadatas;
     // attrId => tokenId => amount
-    mapping(uint256 => mapping(uint256 => uint256)) public _balances;
+    mapping(uint256 => mapping(uint256 => uint256)) public attrBalances;
     // attrId => tokenId => text
-    mapping(uint256 => mapping(uint256 => bytes)) public _texts;
+    mapping(uint256 => mapping(uint256 => bytes)) public attrTexts;
     // tokenId => primaryId
     mapping(uint256 => uint256) public primaryAttrs;
     // tokenId => secondaryIds
     mapping(uint256 => uint256[]) public secondaryAttrs;
 
-    constructor() {}
+    constructor(string memory uri_) {
+        _setURI(uri_);
+    }
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -102,10 +106,9 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         if (bytes(uri).length > 0) {
             return string(abi.encodePacked(uri, attrId.toString()));
         } else {
-            string memory baseURI = _baseAttrURI();
             return
-                bytes(baseURI).length > 0
-                    ? string(abi.encodePacked(baseURI, attrId.toString()))
+                bytes(_baseUri).length > 0
+                    ? string(abi.encodePacked(_baseUri, attrId.toString()))
                     : "";
         }
     }
@@ -143,7 +146,7 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         override
         returns (uint256)
     {
-        return _balances[attrId][tokenId];
+        return attrBalances[attrId][tokenId];
     }
 
     /**
@@ -175,7 +178,7 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         override
         returns (bytes memory)
     {
-        return _texts[attrId][tokenId];
+        return attrTexts[attrId][tokenId];
     }
 
     /**
@@ -204,7 +207,7 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
             ""
         );
 
-        if (_balances[attrId][tokenId] == 0) {
+        if (attrBalances[attrId][tokenId] == 0) {
             if (isPrimary) {
                 primaryAttrs[tokenId] = attrId;
             } else {
@@ -213,10 +216,10 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         }
 
         if (text.length > 0) {
-            _texts[attrId][tokenId] = text;
+            attrTexts[attrId][tokenId] = text;
         }
 
-        _balances[attrId][tokenId] += amount;
+        attrBalances[attrId][tokenId] += amount;
 
         emit TransferSingle(operator, 0, tokenId, attrId, amount);
     }
@@ -240,15 +243,15 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
                 "ERC3664: batchAttach for nonexistent attribute"
             );
 
-            if (_balances[attrIds[i]][tokenId] == 0) {
+            if (attrBalances[attrIds[i]][tokenId] == 0) {
                 secondaryAttrs[tokenId].push(attrIds[i]);
             }
 
             if (texts[i].length > 0) {
-                _texts[attrIds[i]][tokenId] = texts[i];
+                attrTexts[attrIds[i]][tokenId] = texts[i];
             }
 
-            _balances[attrIds[i]][tokenId] += amounts[i];
+            attrBalances[attrIds[i]][tokenId] += amounts[i];
         }
 
         emit TransferBatch(operator, 0, tokenId, attrIds, amounts);
@@ -267,12 +270,10 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
     ) internal virtual {
         require(!_attrExists(attrId), "ERC3664: attribute already exists");
 
-        address operator = _msgSender();
-
         AttrMetadata memory data = AttrMetadata(_name, _symbol, _uri, true);
         _attrMetadatas[attrId] = data;
 
-        emit NewAttribute(operator, attrId, _name, _symbol, _uri);
+        emit AttributeCreated(attrId, _name, _symbol, _uri);
     }
 
     /**
@@ -297,24 +298,9 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
             "ERC3664: symbols and uris length mismatch"
         );
 
-        address operator = _msgSender();
-
         for (uint256 i = 0; i < attrIds.length; i++) {
-            require(
-                !_attrExists(attrIds[i]),
-                "ERC3664: attribute already exists"
-            );
-
-            AttrMetadata memory data = AttrMetadata(
-                names[i],
-                symbols[i],
-                uris[i],
-                true
-            );
-            _attrMetadatas[attrIds[i]] = data;
+            _mint(attrIds[i], names[i], symbols[i], uris[i]);
         }
-
-        emit NewAttributeBatch(operator, attrIds, names, symbols, uris);
     }
 
     /**
@@ -336,13 +322,13 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
             ""
         );
 
-        uint256 tokenBalance = _balances[attrId][tokenId];
+        uint256 tokenBalance = attrBalances[attrId][tokenId];
         require(
             tokenBalance >= amount,
             "ERC3664: insufficient balance for transfer"
         );
         unchecked {
-            _balances[attrId][tokenId] = tokenBalance - amount;
+            attrBalances[attrId][tokenId] = tokenBalance - amount;
         }
 
         emit TransferSingle(operator, tokenId, 0, attrId, amount);
@@ -366,13 +352,13 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         _beforeAttrTransfer(operator, tokenId, 0, attrIds, amounts, "");
 
         for (uint256 i = 0; i < attrIds.length; i++) {
-            uint256 tokenBalance = _balances[attrIds[i]][tokenId];
+            uint256 tokenBalance = attrBalances[attrIds[i]][tokenId];
             require(
                 tokenBalance >= amounts[i],
                 "ERC3664: insufficient balance for transfer"
             );
             unchecked {
-                _balances[attrIds[i]][tokenId] = tokenBalance - amounts[i];
+                attrBalances[attrIds[i]][tokenId] = tokenBalance - amounts[i];
             }
         }
 
@@ -398,12 +384,14 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
     ) internal virtual {}
 
     /**
-     * @dev Base URI for computing {attrURI}. If set, the resulting URI for each
-     * token will be the concatenation of the `baseURI` and the `attrId`. Empty
+     * @dev Sets a new URI for all attribute types
+     *
+     * If set, the resulting URI for each
+     * attribute will be the concatenation of the `_baseUri` and the `attrId`. Empty
      * by default, can be overriden in child contracts.
      */
-    function _baseAttrURI() internal view virtual returns (string memory) {
-        return "";
+    function _setURI(string memory newuri) internal virtual {
+        _baseUri = newuri;
     }
 
     /**
@@ -421,7 +409,7 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         view
         returns (bool)
     {
-        return _balances[attrId][tokenId] > 0;
+        return attrBalances[attrId][tokenId] > 0;
     }
 
     function _asSingletonArray(uint256 element)

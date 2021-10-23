@@ -17,8 +17,6 @@ abstract contract ERC3664CrossSynthetic is ERC3664 {
     // mainToken => SynthesizedToken
     mapping(uint256 => SynthesizedToken[]) public synthesizedTokens;
 
-    constructor() ERC3664() {}
-
     function getSynthesizedTokens(uint256 tokenId)
         public
         view

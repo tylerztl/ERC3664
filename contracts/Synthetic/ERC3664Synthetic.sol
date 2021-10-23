@@ -7,7 +7,7 @@ import "../ERC3664.sol";
 /**
  * @dev Implementation of the {ERC3664Synthetic} interface.
  */
-contract ERC3664Synthetic is ERC3664 {
+abstract contract ERC3664Synthetic is ERC3664 {
     struct SynthesizedToken {
         address owner;
         uint256 id;
@@ -21,8 +21,6 @@ contract ERC3664Synthetic is ERC3664 {
 
     // Mapping from token ID to approved another token.
     mapping(uint256 => uint256) private _combineApprovals;
-
-    constructor() ERC3664() {}
 
     function recordSynthesized(
         address owner,

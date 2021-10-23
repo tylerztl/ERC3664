@@ -29,7 +29,7 @@ contract ERC3664Evolvable is ERC3664Generic, IERC3664Evolvable {
     // attribute ID => token ID => evolutive state
     mapping(uint256 => mapping(uint256 => EvolutiveState)) private _states;
 
-    constructor() ERC3664Generic() {
+    constructor(string memory uri_) ERC3664Generic(uri_) {
         _setupRole(EVOLUTIVER_ROLE, _msgSender());
     }
 

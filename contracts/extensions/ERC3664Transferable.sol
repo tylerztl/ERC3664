@@ -25,7 +25,7 @@ contract ERC3664Transferable is IERC3664Transferable, ERC3664Generic {
         _;
     }
 
-    constructor(address nft) ERC3664Generic() {
+    constructor(address nft, string memory uri_) ERC3664Generic(uri_) {
         _nft = nft;
 
         _setupRole(TRANSFER_ROLE, _msgSender());
@@ -88,7 +88,7 @@ contract ERC3664Transferable is IERC3664Transferable, ERC3664Generic {
             "ERC3664Transferable: recipient has attached the attribute"
         );
 
-        uint256 amount = _balances[attrId][from];
+        uint256 amount = attrBalances[attrId][from];
         _beforeAttrTransfer(
             operator,
             from,
@@ -98,8 +98,8 @@ contract ERC3664Transferable is IERC3664Transferable, ERC3664Generic {
             ""
         );
 
-        _balances[attrId][to] = amount;
-        delete _balances[attrId][from];
+        attrBalances[attrId][to] = amount;
+        delete attrBalances[attrId][from];
         delete _allowances[attrId][from];
 
         emit TransferSingle(operator, from, to, attrId, amount);

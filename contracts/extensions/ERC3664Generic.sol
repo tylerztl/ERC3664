@@ -2,15 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import "openzeppelin-solidity/contracts/utils/Context.sol";
-import "openzeppelin-solidity/contracts/access/AccessControlEnumerable.sol";
 import "../ERC3664.sol";
+import "openzeppelin-solidity/contracts/access/AccessControlEnumerable.sol";
 
-contract ERC3664Generic is Context, AccessControlEnumerable, ERC3664 {
+contract ERC3664Generic is ERC3664, AccessControlEnumerable {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant ATTACH_ROLE = keccak256("ATTACH_ROLE");
 
-    constructor() ERC3664() {
+    constructor(string memory uri_) ERC3664(uri_) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
 
         _setupRole(MINTER_ROLE, _msgSender());

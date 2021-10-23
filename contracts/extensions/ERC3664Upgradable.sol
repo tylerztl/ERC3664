@@ -14,7 +14,7 @@ contract ERC3664Upgradable is ERC3664Generic, IERC3664Upgradable {
     // attribute ID => token ID => current Level
     mapping(uint256 => mapping(uint256 => uint8)) private _levels;
 
-    constructor() ERC3664Generic() {
+    constructor(string memory uri_) ERC3664Generic(uri_) {
         _setupRole(UPGRADER_ROLE, _msgSender());
     }
 
