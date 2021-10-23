@@ -2,21 +2,15 @@
 
 pragma solidity ^0.8.0;
 
+import "../ERC3664.sol";
 import "./IERC3664Upgradable.sol";
-import "./ERC3664Generic.sol";
 
-contract ERC3664Upgradable is ERC3664Generic, IERC3664Upgradable {
-    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
-
+abstract contract ERC3664Upgradable is ERC3664, IERC3664Upgradable {
     // attribute ID => settings
     mapping(uint256 => uint8) public settings;
 
     // attribute ID => token ID => current Level
     mapping(uint256 => mapping(uint256 => uint8)) private _levels;
-
-    constructor(string memory uri_) ERC3664Generic(uri_) {
-        _setupRole(UPGRADER_ROLE, _msgSender());
-    }
 
     function levelOf(uint256 _tokenId, uint256 _attrId)
         public
@@ -35,7 +29,7 @@ contract ERC3664Upgradable is ERC3664Generic, IERC3664Upgradable {
         string memory uri,
         uint8 maxLevel
     ) public virtual override {
-        super.mint(attrId, name, symbol, uri);
+        super._mint(attrId, name, symbol, uri);
 
         settings[attrId] = maxLevel;
     }
@@ -45,10 +39,6 @@ contract ERC3664Upgradable is ERC3664Generic, IERC3664Upgradable {
         uint256 _attrId,
         uint8 _level
     ) public virtual override {
-        require(
-            hasRole(UPGRADER_ROLE, _msgSender()),
-            "ERC3664Upgradable: must have evolutiver role to evolutive"
-        );
         require(
             _hasAttr(_tokenId, _attrId),
             "ERC3664Upgradable: token has not attached the attribute"

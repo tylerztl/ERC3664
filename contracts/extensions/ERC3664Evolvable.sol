@@ -2,12 +2,10 @@
 
 pragma solidity ^0.8.0;
 
+import "../ERC3664.sol";
 import "./IERC3664Evolvable.sol";
-import "./ERC3664Generic.sol";
 
-contract ERC3664Evolvable is ERC3664Generic, IERC3664Evolvable {
-    bytes32 public constant EVOLUTIVER_ROLE = keccak256("EVOLUTIVER_ROLE");
-
+abstract contract ERC3664Evolvable is ERC3664, IERC3664Evolvable {
     struct EvolutiveSettings {
         // Probability in basis points (out of 100) of receiving each level (descending)
         uint8[] probabilities;
@@ -28,10 +26,6 @@ contract ERC3664Evolvable is ERC3664Generic, IERC3664Evolvable {
 
     // attribute ID => token ID => evolutive state
     mapping(uint256 => mapping(uint256 => EvolutiveState)) private _states;
-
-    constructor(string memory uri_) ERC3664Generic(uri_) {
-        _setupRole(EVOLUTIVER_ROLE, _msgSender());
-    }
 
     function period(uint256 tokenId, uint256 attrId)
         public
@@ -58,7 +52,7 @@ contract ERC3664Evolvable is ERC3664Generic, IERC3664Evolvable {
             "ERC3664Evolvable: probabilities and evolutiveIntervals length mismatch"
         );
 
-        super.mint(attrId, name, symbol, uri);
+        super._mint(attrId, name, symbol, uri);
 
         _settings[attrId] = EvolutiveSettings(
             probabilities,
@@ -72,7 +66,7 @@ contract ERC3664Evolvable is ERC3664Generic, IERC3664Evolvable {
         uint256 amount,
         bytes memory text,
         bool isPrimary
-    ) public virtual override(ERC3664Generic, IERC3664) {
+    ) public virtual override(ERC3664, IERC3664) {
         super.attach(tokenId, attrId, amount, text, isPrimary);
 
         _states[attrId][tokenId] = EvolutiveState(
@@ -88,10 +82,6 @@ contract ERC3664Evolvable is ERC3664Generic, IERC3664Evolvable {
         virtual
         override
     {
-        require(
-            hasRole(EVOLUTIVER_ROLE, _msgSender()),
-            "ERC3664Evolvable: must have evolutiver role to evolutive"
-        );
         require(
             _hasAttr(tokenId, attrId),
             "ERC3664Evolvable: token has not attached the attribute"
@@ -126,10 +116,6 @@ contract ERC3664Evolvable is ERC3664Generic, IERC3664Evolvable {
     }
 
     function repair(uint256 tokenId, uint256 attrId) public virtual override {
-        require(
-            hasRole(EVOLUTIVER_ROLE, _msgSender()),
-            "ERC3664Evolvable: must have evolutiver role to repair"
-        );
         require(
             _hasAttr(tokenId, attrId),
             "ERC3664Evolvable: token has not attached the attribute"

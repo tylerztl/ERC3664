@@ -2,24 +2,14 @@
 
 pragma solidity ^0.8.0;
 
+import "../ERC3664.sol";
 import "./IERC3664Updatable.sol";
-import "./ERC3664Generic.sol";
 
-contract ERC3664Updatable is IERC3664Updatable, ERC3664Generic {
-    bytes32 public constant UPDATER_ROLE = keccak256("UPDATER_ROLE");
-
-    constructor(string memory uri_) ERC3664Generic(uri_) {
-        _setupRole(UPDATER_ROLE, _msgSender());
-    }
-
+abstract contract ERC3664Updatable is ERC3664, IERC3664Updatable {
     /**
      * @dev See {IERC3664Updatable-remove}.
      */
     function remove(uint256 tokenId, uint256 attrId) public virtual override {
-        require(
-            hasRole(UPDATER_ROLE, _msgSender()),
-            "ERC3664Updatable: must have updater role to remove"
-        );
         require(
             _attrExists(attrId),
             "ERC3664Updatable: remove for nonexistent attribute"
@@ -55,10 +45,6 @@ contract ERC3664Updatable is IERC3664Updatable, ERC3664Generic {
         uint256 amount
     ) public virtual override {
         require(
-            hasRole(UPDATER_ROLE, _msgSender()),
-            "ERC3664Updatable: must have updater role to increase"
-        );
-        require(
             _attrExists(attrId),
             "ERC3664Updatable: increase for nonexistent attribute"
         );
@@ -90,10 +76,6 @@ contract ERC3664Updatable is IERC3664Updatable, ERC3664Generic {
         uint256 attrId,
         uint256 amount
     ) public virtual override {
-        require(
-            hasRole(UPDATER_ROLE, _msgSender()),
-            "ERC3664Updatable: must have updater role to decrease"
-        );
         require(
             _attrExists(attrId),
             "ERC3664Updatable: decrease for nonexistent attribute"

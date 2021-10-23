@@ -2,16 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import "./IERC3664Transferable.sol";
-import "./ERC3664Generic.sol";
+import "../ERC3664.sol";
 import "../utils/ITokenHolder.sol";
+import "./IERC3664Transferable.sol";
 
 /**
  * @dev Implementation of the {ERC3664Transferable} interface.
  */
-contract ERC3664Transferable is IERC3664Transferable, ERC3664Generic {
-    bytes32 public constant TRANSFER_ROLE = keccak256("TRANSFER_ROLE");
-
+abstract contract ERC3664Transferable is ERC3664, IERC3664Transferable {
     // attribute ID => from token ID => to token ID
     mapping(uint256 => mapping(uint256 => uint256)) private _allowances;
 
@@ -25,10 +23,8 @@ contract ERC3664Transferable is IERC3664Transferable, ERC3664Generic {
         _;
     }
 
-    constructor(address nft, string memory uri_) ERC3664Generic(uri_) {
+    constructor(address nft, string memory uri_) ERC3664(uri_) {
         _nft = nft;
-
-        _setupRole(TRANSFER_ROLE, _msgSender());
     }
 
     /**
@@ -73,12 +69,6 @@ contract ERC3664Transferable is IERC3664Transferable, ERC3664Generic {
         uint256 to,
         uint256 attrId
     ) public virtual override {
-        address operator = _msgSender();
-        require(
-            ITokenHolder(_nft).holderOf(from) == operator ||
-                hasRole(TRANSFER_ROLE, operator),
-            "ERC3664Transferable: caller no transfer access"
-        );
         require(
             isApproved(from, to, attrId),
             "ERC3664Transferable: nft holder not approve the attribute to recipient"
@@ -88,6 +78,7 @@ contract ERC3664Transferable is IERC3664Transferable, ERC3664Generic {
             "ERC3664Transferable: recipient has attached the attribute"
         );
 
+        address operator = _msgSender();
         uint256 amount = attrBalances[attrId][from];
         _beforeAttrTransfer(
             operator,
