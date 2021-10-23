@@ -1,1 +1,1 @@
-truffle-flattener contracts/ERC3664.sol > flattened/ERC3664.sol
+truffle-flattener contracts/presets/ERC3664Generic.sol > flattened/ERC3664Generic.sol

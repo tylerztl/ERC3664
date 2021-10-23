@@ -111,6 +111,9 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         }
     }
 
+    /**
+     * @dev See {IERC3664-primaryAttributeOf}.
+     */
     function primaryAttributeOf(uint256 tokenId)
         public
         view
@@ -121,6 +124,9 @@ contract ERC3664 is Context, ERC165, IERC3664, IERC3664Metadata {
         return _primaryAttrs[tokenId];
     }
 
+    /**
+     * @dev See {IERC3664-setPrimaryAttribute}.
+     */
     function setPrimaryAttribute(uint256 tokenId, uint256 attrId)
         public
         virtual
